@@ -1,0 +1,66 @@
+import React, { useMemo, useState } from "react";
+
+type Product = {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+};
+
+function formatKRW(n: number) {
+  return new Intl.NumberFormat("ru-RU", {
+    style: "currency",
+    currency: "KRW",
+    maximumFractionDigits: 0,
+  }).format(n);
+}
+
+const PRODUCTS: Product[] = [
+  { id: "date-basic", title: "Свидание под ключ — Базовое", description: "Маршрут, бронирование столика, свечи, музыка", price: 149000 },
+  { id: "date-premium", title: "Свидание под ключ — Премиум", description: "Индивидуальный сценарий, декор, координатор, сюрпризы", price: 249000 },
+  { id: "photographer", title: "Фотограф (1 час)", description: "Проф. съёмка ваших моментов. 20–30 фото", price: 99000 },
+  { id: "flowers", title: "Букет цветов", description: "Авторский букет под ваш сценарий", price: 59000 },
+  { id: "date-custom", title: "Индивидуальный сценарий", description: "С нуля под вашу историю", price: 199000 },
+];
+
+export default function App() {
+  const [cart, setCart] = useState<(Product & { qty: number })[]>([]);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [date, setDate] = useState("");
+  const [agree, setAgree] = useState(false);
+
+  const subtotal = useMemo(
+    () => cart.reduce((sum, item) => sum + item.price * item.qty, 0),
+    [cart]
+  );
+
+  const addToCart = (product: Product) => {
+    setCart((prev) => {
+      const found = prev.find((p) => p.id === product.id);
+      if (found) {
+        return prev.map((p) =>
+          p.id === product.id ? { ...p, qty: p.qty + 1 } : p
+        );
+      }
+      return [...prev, { ...product, qty: 1 }];
+    });
+  };
+
+  const removeFromCart = (id: string) => {
+    setCart((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const submitOrder = () => {
+    if (!name || !phone || !date || !agree) {
+      alert("Заполните все поля и согласитесь с условиями!");
+      return;
+    }
+    alert(
+      `Заказ отправлен!\nИмя: ${name}\nТелефон: ${phone}\нДата: ${date}\nСумма: ${formatKRW(subtotal)}`
+    );
+    setCart([]);
+  };
+
+  return (
+    <div style={{ padding: 20, fontFamily: "Arial, sans-serif" }}>
